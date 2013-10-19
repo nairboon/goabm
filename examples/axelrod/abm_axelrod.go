@@ -3,7 +3,7 @@ This file is part of GoABM
 Copyright 2013 by Remo Hertig <remo.hertig@bluewin.ch>
 */
 
-// An go implementation of Robert Axelrods ABM model of disseminating culture [1]
+// An go implementation of Robert Axelrods ABM model of disseminating culture [1].
 // [1]: Axelrod, Robert. "The dissemination of culture a model with local convergence and global polarization." Journal of conflict resolution 41, no. 2 (1997): 203-226.
 package main
 
@@ -26,17 +26,16 @@ func (a *AxelrodAgent) Culture() string {
 // required for the simulation interface, called everytime when the agent is activated
 func (a *AxelrodAgent) Act() {
 
-	//fmt.Printf("Agent culture: %v\n",a.features)
+	// (ii) (a) selects a neighbor for cultural interaction
 	other := a.Agent.GetRandomNeighbor().(*AxelrodAgent)
 	sim := a.Similarity(other)
 	if sim >= 0.99 {
 		// agents are already equal
 		return
 	}
-	probabilityToInteract := rand.Float32()
-	//fmt.Printf("interacting %f <= %f\n",probabilityToInteract,sim)
+	dice := rand.Float32()
 	//interact with sim% chance
-	if probabilityToInteract <= sim {
+	if dice <= sim {
 
 		for i := range a.features {
 			if a.features[i] != other.features[i] {
@@ -110,11 +109,11 @@ func (a *Axelrod) CountCultures() int {
 func main() {
 	fmt.Println("ABM simulation")
 
-	var traits = flag.Int("traits", 5, "help message for flagname")
-	var features = flag.Int("features", 5, "help message for flagname")
-	var size = flag.Int("size", 10, "help message for flagname")
+	var traits = flag.Int("traits", 5, "number of cultural traits per feature")
+	var features = flag.Int("features", 5, "number of cultural features")
+	var size = flag.Int("size", 10, "size (width/height) of the landscape")
 
-	var runs = flag.Int("runs", 200, "help message for flagname")
+	var runs = flag.Int("runs", 200, "number of simulation runs")
 	flag.Parse()
 
 	model := &Axelrod{Traits: *traits, Features: *features}
