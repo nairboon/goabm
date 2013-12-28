@@ -14,13 +14,13 @@ import "flag"
 
 // Implementation of the Agent, cultural Traits are stored in features
 type AxelrodAgent struct {
-	features Feature
+	Features Feature
 	Agent    goabm.FLNMAgenter
 }
 
 // returns the culture as a string
 func (a *AxelrodAgent) Culture() string {
-	return fmt.Sprintf("%v", a.features)
+	return fmt.Sprintf("%v", a.Features)
 }
 
 // required for the simulation interface, called everytime when the agent is activated
@@ -37,10 +37,10 @@ func (a *AxelrodAgent) Act() {
 	//interact with sim% chance
 	if dice <= sim {
 
-		for i := range a.features {
-			if a.features[i] != other.features[i] {
+		for i := range a.Features {
+			if a.Features[i] != other.Features[i] {
 				//fmt.Printf("%d influenced %d\n", other.seqnr, a.seqnr)
-				a.features[i] = other.features[i]
+				a.Features[i] = other.Features[i]
 				return
 			}
 
@@ -53,13 +53,13 @@ func (a *AxelrodAgent) Act() {
 func (a *AxelrodAgent) Similarity(other *AxelrodAgent) float32 {
 	c := float32(0.0)
 	// count equal traits, final score = shared traits/total traits
-	for i := range a.features {
-		if a.features[i] == other.features[i] {
+	for i := range a.Features {
+		if a.Features[i] == other.Features[i] {
 			c = c + 1
 		}
 	}
 	//fmt.Printf("sim: %f/%d\n",c,len(a.features))
-	return c / float32(len(a.features))
+	return c / float32(len(a.Features))
 }
 
 type Feature []int
@@ -83,7 +83,7 @@ func (a *Axelrod) CreateAgent(agenter interface{}) goabm.Agenter {
 	for i := range f {
 		f[i] = rand.Intn(a.Traits)
 	}
-	agent.features = f
+	agent.Features = f
 	return agent
 }
 

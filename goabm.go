@@ -21,9 +21,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // currently there is only a static 2d grid landscape, see examples/
 package goabm
 
-import "math/rand"
-import "reflect"
-import "fmt"
+import ("math/rand"
+ "reflect"
+ "fmt"
+
+)
 
 type Agenter interface {
 	Act()
@@ -39,6 +41,7 @@ type Landscaper interface {
 	Init(Modeler)
 	//Action()
 	GetAgents() []Agenter
+	Dump() string //TODO: cleanup dump and use streams
 }
 
 
@@ -78,6 +81,10 @@ func (s *Simulation) Step() {
 	s.Stats.Steps = s.Stats.Steps + 1
 	s.Log.Step(s.Stats)
 	
+	if(JournaledSimulation) { // dump landscape
+	
+	fmt.Println(s.Landscape.Dump())
+	}
 
 }
 

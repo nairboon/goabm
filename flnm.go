@@ -4,8 +4,9 @@ Copyright 2013 by Remo Hertig <remo.hertig@bluewin.ch>
 */
 package goabm
 
-import "fmt"
-import "math/rand"
+import ("fmt"
+ "math/rand"
+ "encoding/json")
 
 // 2d landscape with no movement
 type FixedLandscapeNoMovement struct {
@@ -21,11 +22,21 @@ type FLNMAgenter interface {
 }
 
 type FLNMAgent struct {
-	seqnr int
-	x     int
-	y     int
+	Seqnr int 
+	X     int 
+	Y     int 
 	ls    *FixedLandscapeNoMovement
 	//exe Agenter
+}
+
+
+func (l *FixedLandscapeNoMovement) Dump() string {
+
+b, err := json.Marshal(l.UserAgents)
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+return string(b)
 }
 
 func (l *FixedLandscapeNoMovement) GetAgents() []Agenter {
@@ -49,13 +60,13 @@ func (l *FixedLandscapeNoMovement) GetAgent(x, y int) Agenter {
 func (a *FLNMAgent) GetRandomNeighbor() Agenter {
 	switch choice := rand.Int31n(3); choice {
 	case 0: // top
-		return a.ls.GetAgent(a.x, a.y+1)
+		return a.ls.GetAgent(a.X, a.Y+1)
 	case 1: // right
-		return a.ls.GetAgent(a.x+1, a.y)
+		return a.ls.GetAgent(a.X+1, a.Y)
 	case 2: // down
-		return a.ls.GetAgent(a.x, a.y-1)
+		return a.ls.GetAgent(a.X, a.Y-1)
 	case 3: // left
-		return a.ls.GetAgent(a.x-1, a.y)
+		return a.ls.GetAgent(a.X-1, a.Y)
 	default:
 		panic(">3")
 
@@ -77,10 +88,10 @@ func (l *FixedLandscapeNoMovement) Init(model Modeler) {
 		//for i:=0;i<numAgents;i++ {
 		l.UserAgents[i] = model.CreateAgent(&l.Agents[i])
 
-		l.Agents[i].seqnr = i
+		l.Agents[i].Seqnr = i
 
-		l.Agents[i].x = x
-		l.Agents[i].y = y
+		l.Agents[i].X = x
+		l.Agents[i].Y = y
 		x += 1
 		if x >= l.width {
 			// new row
