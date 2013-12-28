@@ -24,7 +24,7 @@ package goabm
 import ("math/rand"
  "reflect"
  "fmt"
-
+"os"
 )
 
 type Agenter interface {
@@ -41,7 +41,7 @@ type Landscaper interface {
 	Init(Modeler)
 	//Action()
 	GetAgents() []Agenter
-	Dump() string //TODO: cleanup dump and use streams
+	Dump() []byte //TODO: cleanup dump and use streams
 }
 
 
@@ -58,6 +58,7 @@ type Simulation struct {
 	Stats     Statistics
 	Model     Modeler
 	Log Logger
+	AbstInterface Abst
 }
 
 func (s *Simulation) Init() {
@@ -65,7 +66,12 @@ func (s *Simulation) Init() {
 	s.Landscape.Init(s.Model)
 	s.Model.Init(s.Landscape)
 	s.Log.Model = s.Model
+
+
+	s.AbstInterface.Init()
+		s.Log.Out = s.AbstInterface.Log
 	s.Log.Init()
+
 
 }
 func (s *Simulation) Step() {
@@ -83,7 +89,8 @@ func (s *Simulation) Step() {
 	
 	if(JournaledSimulation) { // dump landscape
 	
-	fmt.Println(s.Landscape.Dump())
+	//fmt.Println(s.Landscape.Dump())
+	s.AbstInterface.Journal.Write(s.Landscape.Dump())
 	}
 
 }
@@ -92,13 +99,14 @@ type Logger struct {
 	StdOut bool
 	Model Modeler
 	FirstOut bool
+	Out *os.File
 
 }
 
 func (l *Logger) Init() {
 l.FirstOut = true
 	if(l.StdOut) {
-	fmt.Printf("Step,\tEvents,\t")
+	fmt.Fprintf(l.Out,"Step,\tEvents,\t")
 	}
 
 }
@@ -114,15 +122,15 @@ func (l *Logger) Step(stats Statistics) {
 			if f.Type().Kind() != reflect.Interface {
 				if typeOfT.Field(i).Tag.Get("goabm") != "hide" {
 					if l.FirstOut {
-						fmt.Printf("%s,\t", typeOfT.Field(i).Name)
+						fmt.Fprintf(l.Out,"%s,\t", typeOfT.Field(i).Name)
 					} else {
-						fmt.Printf("%d,\t%d,\t%v,\t", stats.Steps, stats.Events, f.Interface())
+						fmt.Fprintf(l.Out,"%d,\t%d,\t%v,\t", stats.Steps, stats.Events, f.Interface())
 					}
 				}
 
 			}
 		}
-		fmt.Printf("\n")
+		fmt.Fprintf(l.Out,"\n")
 		if l.FirstOut {
 			l.FirstOut = false
 		}

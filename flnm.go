@@ -30,13 +30,13 @@ type FLNMAgent struct {
 }
 
 
-func (l *FixedLandscapeNoMovement) Dump() string {
+func (l *FixedLandscapeNoMovement) Dump() []byte {
 
 b, err := json.Marshal(l.UserAgents)
 	if err != nil {
 		fmt.Println("error:", err)
 	}
-return string(b)
+return b
 }
 
 func (l *FixedLandscapeNoMovement) GetAgents() []Agenter {

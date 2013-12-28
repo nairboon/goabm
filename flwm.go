@@ -35,9 +35,9 @@ type FLWMAgent struct {
 	//exe Agenter
 }
 
-func (l *FixedLandscapeWithMovement) Dump() string {
+func (l *FixedLandscapeWithMovement) Dump() []byte {
 
-	return ""
+	return []byte("")
 }
 
 func (l *FixedLandscapeWithMovement) GetAgents() []Agenter {
