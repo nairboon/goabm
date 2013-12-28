@@ -22,7 +22,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package goabm
 
 import "math/rand"
-
+import "reflect"
+import "fmt"
 
 type Agenter interface {
 	Act()
@@ -44,6 +45,7 @@ type Landscaper interface {
 
 type Statistics struct {
 	Events int
+	Steps int
 }
 
 type Simulation struct {
@@ -52,12 +54,15 @@ type Simulation struct {
 	Landscape Landscaper
 	Stats     Statistics
 	Model     Modeler
+	Log Logger
 }
 
 func (s *Simulation) Init() {
 
 	s.Landscape.Init(s.Model)
 	s.Model.Init(s.Landscape)
+	s.Log.Model = s.Model
+	s.Log.Init()
 
 }
 func (s *Simulation) Step() {
@@ -70,5 +75,51 @@ func (s *Simulation) Step() {
 		//fmt.Printf("running Agent #%d\n",i)
 		s.Stats.Events = s.Stats.Events + 1
 	}
+	s.Stats.Steps = s.Stats.Steps + 1
+	s.Log.Step(s.Stats)
+	
 
 }
+
+type Logger struct {
+	StdOut bool
+	Model Modeler
+	FirstOut bool
+
+}
+
+func (l *Logger) Init() {
+l.FirstOut = true
+	if(l.StdOut) {
+	fmt.Printf("Step,\tEvents,\t")
+	}
+
+}
+
+func (l *Logger) Step(stats Statistics) {
+	if l.StdOut {
+		// get the fields of the model through reflection
+		s := reflect.ValueOf(l.Model).Elem()
+		//s := reflect.Indirect(in).Elem()
+		typeOfT := s.Type()
+		for i := 0; i < s.NumField(); i++ {
+			f := s.Field(i)
+			if f.Type().Kind() != reflect.Interface {
+				if typeOfT.Field(i).Tag.Get("goabm") != "hide" {
+					if l.FirstOut {
+						fmt.Printf("%s,\t", typeOfT.Field(i).Name)
+					} else {
+						fmt.Printf("%d,\t%d,\t%v,\t", stats.Steps, stats.Events, f.Interface())
+					}
+				}
+
+			}
+		}
+		fmt.Printf("\n")
+		if l.FirstOut {
+			l.FirstOut = false
+		}
+	}
+
+}
+

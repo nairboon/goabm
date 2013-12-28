@@ -67,8 +67,8 @@ type Feature []int
 type Axelrod struct {
 	Cultures  int
 	Landscape goabm.Landscaper
-	Traits    int
-	Features  int
+	Traits    int `goabm:"hide"` // don't show these in the stats'
+	Features  int `goabm:"hide"`
 }
 
 func (a *Axelrod) Init(l goabm.Landscaper) {
@@ -108,7 +108,7 @@ func (a *Axelrod) CountCultures() int {
 
 func main() {
 	fmt.Println("ABM simulation")
-
+	goabm.Init()
 	var traits = flag.Int("traits", 5, "number of cultural traits per feature")
 	var features = flag.Int("features", 5, "number of cultural features")
 	var size = flag.Int("size", 10, "size (width/height) of the landscape")
@@ -117,10 +117,10 @@ func main() {
 	flag.Parse()
 
 	model := &Axelrod{Traits: *traits, Features: *features}
-	sim := &goabm.Simulation{Landscape: &goabm.FixedLandscapeNoMovement{Size: *size}, Model: model}
+	sim := &goabm.Simulation{Landscape: &goabm.FixedLandscapeNoMovement{Size: *size}, Model: model, Log: goabm.Logger{StdOut: true}}
 	sim.Init()
 	for i := 0; i < *runs; i++ {
-		fmt.Printf("Step #%d, Events:%d, Cultures:%d\n", i, sim.Stats.Events, model.Cultures)
+		//fmt.Printf("Step #%d, Events:%d, Cultures:%d\n", i, sim.Stats.Events, model.Cultures)
 		if model.Cultures == 1 {
 			return
 		}
