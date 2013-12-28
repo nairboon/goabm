@@ -25,6 +25,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"time"
 )
 
 var JournaledSimulation bool
@@ -50,6 +51,7 @@ type Abst struct {
 }
 
 func (a *Abst) Init() {
+rand.Seed(int64(time.Now().Nanosecond()))
 	_, err := os.Stat(OutputDir)
 	if err != nil {
 		// create directory
@@ -60,10 +62,17 @@ func (a *Abst) Init() {
 	}
 	if RunID == "" {
 		RunID = fmt.Sprintf("%d", rand.Int())
+		
 	}
+	runDir := OutputDir + "/goabm." + RunID
+	err = os.Mkdir(runDir, 0700)
+		if err != nil {
+			panic(err)
+		}
+		
 	// create output streams
 	if LogToFile {
-		f, err := os.Create(OutputDir + "/goabm-" + RunID + "-log")
+		f, err := os.Create(runDir + "/log")
 		if err != nil {
 			panic(err)
 		}
@@ -76,7 +85,7 @@ func (a *Abst) Init() {
 	}
 	if JournaledSimulation {
 		// create journal file
-		f, err := os.Create(OutputDir + "/goabm-" + RunID + "-journal")
+		f, err := os.Create(runDir + "/journal")
 		if err != nil {
 			panic(err)
 		}
