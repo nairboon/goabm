@@ -22,21 +22,21 @@ type FLNMAgenter interface {
 }
 
 type FLNMAgent struct {
-	Seqnr int 
-	X     int 
-	Y     int 
+	Seqnr int `json:"index"`
+	X     int `json:"x"`
+	Y     int `json:"y"`
 	ls    *FixedLandscapeNoMovement
 	//exe Agenter
 }
 
 type Link struct {
-Source int
-Target int
+Source int `json:"source"`
+Target int `json:"target"`
 }
 
 type NetworkDump struct {
-Nodes []Agenter
-Links []Link
+Nodes []Agenter `json:"nodes"`
+Links []Link `json:"links"`
 }
 func (l *FixedLandscapeNoMovement) Dump() []byte {
 // dump as a network
@@ -61,7 +61,7 @@ var t FLNMAgent
 	}
 	if a.Seqnr != t.Seqnr {
 	//panic("self link")
-	link := Link{Source: a.Seqnr, Target: t.Seqnr}
+	        link := Link{Source: a.Seqnr, Target: t.Seqnr}
 		     links = append(links,link)
 	}
 		
