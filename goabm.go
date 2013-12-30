@@ -91,6 +91,7 @@ func (s *Simulation) Step() {
 	
 	//fmt.Println(s.Landscape.Dump())
 	s.AbstInterface.Journal.Write(s.Landscape.Dump())
+	s.AbstInterface.Journal.Write([]byte("\n"))
 	}
 
 }

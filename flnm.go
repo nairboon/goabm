@@ -29,10 +29,47 @@ type FLNMAgent struct {
 	//exe Agenter
 }
 
+type Link struct {
+Source int
+Target int
+}
 
+type NetworkDump struct {
+Nodes []Agenter
+Links []Link
+}
 func (l *FixedLandscapeNoMovement) Dump() []byte {
+// dump as a network
+nodes := l.UserAgents
+links := make([]Link,len(l.Agents)*4) // every node has 4 neighbors
 
-b, err := json.Marshal(l.UserAgents)
+	for _,a := range l.Agents {
+	     for i:=0;i< 4; i++ {
+	        
+var t FLNMAgent
+	      switch i {
+	case 0: // top
+		t= l._GetAgent(a.X, a.Y+1)
+	case 1: // right
+		t= l._GetAgent(a.X+1, a.Y)
+	case 2: // down
+		t= l._GetAgent(a.X, a.Y-1)
+	case 3: // left
+		t= l._GetAgent(a.X-1, a.Y)
+	default:
+		panic(">3")
+	}
+	if a.Seqnr != t.Seqnr {
+	//panic("self link")
+	link := Link{Source: a.Seqnr, Target: t.Seqnr}
+		     links = append(links,link)
+	}
+		
+	     }   
+
+	}
+	
+b, err := json.Marshal(NetworkDump{Nodes:nodes,Links:links})
 	if err != nil {
 		fmt.Println("error:", err)
 	}
@@ -55,6 +92,17 @@ func (l *FixedLandscapeNoMovement) GetAgent(x, y int) Agenter {
 	}
 
 	return l.UserAgents[l.width*x+y]
+}
+
+func (l *FixedLandscapeNoMovement) _GetAgent(x, y int) FLNMAgent {
+	if x >= l.width || x < 0 {
+		x = 0
+	}
+	if y >= l.height || y < 0 {
+		y = 0
+	}
+
+	return l.Agents[l.width*x+y]
 }
 
 func (a *FLNMAgent) GetRandomNeighbor() Agenter {
