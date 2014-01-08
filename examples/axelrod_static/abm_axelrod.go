@@ -107,6 +107,7 @@ func (a *Axelrod) CountCultures() int {
 }
 
 func main() {
+        //initialize the goabm library (logs & flags)
 	goabm.Init()
 
 	var traits = flag.Int("traits", 5, "number of cultural traits per feature")
@@ -116,7 +117,9 @@ func main() {
 	var runs = flag.Int("runs", 200, "number of simulation runs")
 	flag.Parse()
 
+        // create your model which has to satisfy the Modeler interface
 	model := &Axelrod{Traits: *traits, Features: *features}
+	// create the simulation with a Landscape, your model and a logger
 	sim := &goabm.Simulation{Landscape: &goabm.FixedLandscapeNoMovement{Size: *size}, Model: model, Log: goabm.Logger{StdOut: true}}
 	sim.Init()
 		fmt.Println("ABM simulation")
