@@ -29,15 +29,7 @@ type FLNMAgent struct {
 	//exe Agenter
 }
 
-type Link struct {
-Source AgentID `json:"source"`
-Target AgentID `json:"target"`
-}
 
-type NetworkDump struct {
-Nodes []Agenter `json:"nodes"`
-Links []Link `json:"links"`
-}
 func (l *FixedLandscapeNoMovement) Dump() []byte {
 // dump as a network
 nodes := l.UserAgents
