@@ -25,6 +25,8 @@ import ("math/rand"
  "reflect"
  "fmt"
 "os"
+"runtime"
+ "encoding/json"
 )
 
 type AgentID int
@@ -42,8 +44,8 @@ type Modeler interface {
 type Landscaper interface {
 	Init(Modeler)
 	//Action()
-	GetAgents() []Agenter
-	Dump() []byte //TODO: cleanup dump and use streams
+	GetAgents() *[]Agenter
+	Dump() NetworkDump //TODO: cleanup dump and use streams
 	GetAgentById(AgentID) Agenter
 }
 
@@ -65,9 +67,9 @@ type Simulation struct {
 }
 
 func (s *Simulation) Init() {
-
-	s.Landscape.Init(s.Model)
 	s.Model.Init(s.Landscape)
+	s.Landscape.Init(s.Model)
+
 	s.Log.Model = s.Model
 
 
@@ -77,13 +79,19 @@ func (s *Simulation) Init() {
 
 
 }
+
+func (s *Simulation) Stop() {
+ s.AbstInterface.Close()
+ s.Log.Out.Sync()
+}
+
 func (s *Simulation) Step() {
 	s.Model.LandscapeAction()
 	//r := rand.New(rand.NewSource(90))
-	order := rand.Perm(len(s.Landscape.GetAgents()))
+	order := rand.Perm(len(*s.Landscape.GetAgents()))
 	//fmt.Printf("order: %v\n", order)
 	for _, i := range order {
-		s.Landscape.GetAgents()[i].Act()
+		(*s.Landscape.GetAgents())[i].Act()
 		//fmt.Printf("running Agent #%d\n",i)
 		s.Stats.Events = s.Stats.Events + 1
 	}
@@ -93,10 +101,20 @@ func (s *Simulation) Step() {
 	if(JournaledSimulation) { // dump landscape
 	
 	//fmt.Println(s.Landscape.Dump())
-	s.AbstInterface.Journal.Write(s.Landscape.Dump())
-	s.AbstInterface.Journal.Write([]byte("\n"))
+
+        dump := s.Landscape.Dump()
+        //marshal
+        b, err := json.Marshal(dump)
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+	s.AbstInterface.ZipJournal.Write(b)
+	s.AbstInterface.ZipJournal.Write([]byte("\n\r\n"))
+	s.AbstInterface.Journal.Sync()
 	}
 
+//force gc
+runtime.GC()
 }
 
 type Logger struct {

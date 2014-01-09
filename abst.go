@@ -26,9 +26,13 @@ import (
 	"math/rand"
 	"os"
 	"time"
+	"io"
+	"log"
+	"compress/gzip"
 )
 
 var JournaledSimulation bool
+var JournaledSimulationZip bool
 var LogToFile bool
 var OutputDir string
 var RunID string
@@ -36,6 +40,7 @@ var RunID string
 // add some flags
 func Init() {
 	flag.BoolVar(&JournaledSimulation, "abst.journal", false, "log all simulation states (agent moves)")
+	flag.BoolVar(&JournaledSimulationZip, "abst.journal.zip", true, "zip the log")
 	flag.BoolVar(&LogToFile, "abst.logtofile", false, "log aggregated states to file in abst.out")
 	flag.StringVar(&OutputDir, "abst.out", "out", "output dir")
 	flag.StringVar(&RunID, "abst.runid", "", "id of the run, random if not provided")
@@ -48,6 +53,7 @@ func GetAbstPath() {
 type Abst struct {
 	Log     *os.File
 	Journal *os.File
+	ZipJournal io.WriteCloser
 }
 
 func (a *Abst) Init() {
@@ -85,10 +91,20 @@ rand.Seed(int64(time.Now().Nanosecond()))
 	}
 	if JournaledSimulation {
 		// create journal file
-		f, err := os.Create(runDir + "/journal")
+		f, err := os.Create(runDir + "/journal.gz")
 		if err != nil {
 			panic(err)
 		}
 		a.Journal = f
+		fmt.Println("Using journal: ",runDir + "/journal.gz")
+		a.ZipJournal = gzip.NewWriter(a.Journal)
 	}
+}
+
+func (a *Abst) Close() {
+ err := a.ZipJournal.Close()
+ if err != nil {
+    		log.Fatal(err)
+	}
+ a.Journal.Close()
 }

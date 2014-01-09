@@ -6,7 +6,7 @@ package goabm
 
 import ("fmt"
  "math/rand"
- "encoding/json")
+)
 
 // 2d landscape with no movement
 type FixedLandscapeNoMovement struct {
@@ -30,7 +30,7 @@ type FLNMAgent struct {
 }
 
 
-func (l *FixedLandscapeNoMovement) Dump() []byte {
+func (l *FixedLandscapeNoMovement) Dump() NetworkDump {
 // dump as a network
 nodes := l.UserAgents
 var links []Link  
@@ -62,11 +62,8 @@ var t FLNMAgent
 
 	}
 	
-b, err := json.Marshal(NetworkDump{Nodes:nodes,Links:links})
-	if err != nil {
-		fmt.Println("error:", err)
-	}
-return b
+return NetworkDump{Nodes:nodes,Links:links}
+
 }
 
 func (l *FixedLandscapeNoMovement) GetAgentById(id AgentID) Agenter {
@@ -78,9 +75,9 @@ func (l *FixedLandscapeNoMovement) GetAgentById(id AgentID) Agenter {
  	return nil
 }
 
-func (l *FixedLandscapeNoMovement) GetAgents() []Agenter {
+func (l *FixedLandscapeNoMovement) GetAgents() *[]Agenter {
 
-	return l.UserAgents
+	return &l.UserAgents
 }
 
 func (l *FixedLandscapeNoMovement) GetAgent(x, y int) Agenter {

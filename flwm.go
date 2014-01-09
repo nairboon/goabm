@@ -6,7 +6,7 @@ package goabm
 
 import "fmt"
 import "math/rand"
-import "encoding/json"
+
 import qt "github.com/larspensjo/quadtree"
 import vector "github.com/proxypoke/vector"
 
@@ -30,8 +30,8 @@ type FLWMAgent struct {
 	Seqnr AgentID `json:"index"`
 	X     float64 `json:"x"`
 	Y     float64 `json:"y"`
-	ls    *FixedLandscapeWithMovement
-	qt.Handle
+	ls    *FixedLandscapeWithMovement `json:"-"`
+	qt.Handle `json:"-"`
 	//exe Agenter
 }
 
@@ -39,7 +39,7 @@ func (a *FLWMAgent) Id() AgentID {
 	return a.Seqnr
 }
 
-func (l *FixedLandscapeWithMovement) Dump() []byte {
+func (l *FixedLandscapeWithMovement) Dump() NetworkDump {
 	// dump as a network
 	nodes := l.UserAgents
 	var links []Link
@@ -59,16 +59,13 @@ func (l *FixedLandscapeWithMovement) Dump() []byte {
 
 	}
 
-	b, err := json.Marshal(NetworkDump{Nodes: nodes, Links: links})
-	if err != nil {
-		fmt.Println("error:", err)
-	}
-	return b
+	
+	return NetworkDump{Nodes:nodes,Links:links}
 }
 
-func (l *FixedLandscapeWithMovement) GetAgents() []Agenter {
+func (l *FixedLandscapeWithMovement) GetAgents() *[]Agenter {
 
-	return l.UserAgents
+	return &l.UserAgents
 }
 
 func (l *FixedLandscapeWithMovement) GetAgentById(id AgentID) Agenter {
@@ -90,7 +87,7 @@ func (a *FLWMAgent) MoveRandomly(steplength float64) {
 	x = x + a.X
 	y = y + a.Y
 	a.ls.tree.Move(a, qt.Twof{x, y})
-	fmt.Printf("move from %f/%f to %f/%f\n",a.X,a.Y,x,y)
+	//fmt.Printf("move from %f/%f to %f/%f\n",a.X,a.Y,x,y)
 	a.X = x
 	a.Y = y
 }

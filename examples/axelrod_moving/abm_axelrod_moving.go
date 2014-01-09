@@ -118,7 +118,7 @@ func (a *Axelrod) LandscapeAction() {
 
 func (a *Axelrod) CountCultures() int {
 	cultures := make(map[string]int)
-	for _, b := range a.Landscape.GetAgents() {
+	for _, b := range *a.Landscape.GetAgents() {
 		a := b.(*AxelrodAgent)
 		cul := a.Culture()
 		if _, ok := cultures[cul]; ok {
@@ -156,11 +156,14 @@ sim := &goabm.Simulation{Landscape: &goabm.FixedLandscapeWithMovement{Size: *siz
 	for i := 0; i < *runs; i++ {
 		//fmt.Printf("Step #%d, Events:%d, Cultures:%d\n", i, sim.Stats.Events, model.Cultures)
 		if model.Cultures == 1 {
+		sim.Stop()
+	fmt.Printf("Stimulation prematurely done\n")
 			return
 		}
 		sim.Step()
 
 	}
+		sim.Stop()
 	//fmt.Printf("%v\n",sim.Landscape.GetAgents())
 
 }
