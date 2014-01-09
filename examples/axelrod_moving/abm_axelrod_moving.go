@@ -93,8 +93,8 @@ type Axelrod struct {
 	ProbVeloc float64
 }
 
-func (a *Axelrod) Init(l goabm.Landscaper) {
-	a.Landscape = l
+func (a *Axelrod) Init(l interface{}) {
+	a.Landscape = l.(goabm.Landscaper)
 }
 
 func (a *Axelrod) CreateAgent(agenter interface{}) goabm.Agenter {
@@ -131,6 +131,9 @@ func (a *Axelrod) CountCultures() int {
 }
 
 func main() {
+       //initialize the goabm library (logs & flags)
+	goabm.Init()
+	        
 	fmt.Println("ABM simulation")
 	// general model parameters
 	var traits = flag.Int("traits", 5, "number of cultural traits per feature")

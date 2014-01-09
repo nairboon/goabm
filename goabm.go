@@ -27,13 +27,15 @@ import ("math/rand"
 "os"
 )
 
+type AgentID int
+
 type Agenter interface {
 	Act()
 }
 
 type Modeler interface {
 	LandscapeAction()
-	Init(Landscaper)
+	Init(interface{})//Landscaper)
 	CreateAgent(interface{}) Agenter
 }
 
@@ -42,6 +44,7 @@ type Landscaper interface {
 	//Action()
 	GetAgents() []Agenter
 	Dump() []byte //TODO: cleanup dump and use streams
+	GetAgentById(AgentID) Agenter
 }
 
 
@@ -118,6 +121,9 @@ func (l *Logger) Step(stats Statistics) {
 		s := reflect.ValueOf(l.Model).Elem()
 		//s := reflect.Indirect(in).Elem()
 		typeOfT := s.Type()
+		if !l.FirstOut {
+			fmt.Fprintf(l.Out,"%d,\t%d,\t", stats.Steps, stats.Events)
+		}
 		for i := 0; i < s.NumField(); i++ {
 			f := s.Field(i)
 			if f.Type().Kind() != reflect.Interface {
@@ -125,7 +131,7 @@ func (l *Logger) Step(stats Statistics) {
 					if l.FirstOut {
 						fmt.Fprintf(l.Out,"%s,\t", typeOfT.Field(i).Name)
 					} else {
-						fmt.Fprintf(l.Out,"%d,\t%d,\t%v,\t", stats.Steps, stats.Events, f.Interface())
+						fmt.Fprintf(l.Out,"%v,\t",f.Interface())
 					}
 				}
 

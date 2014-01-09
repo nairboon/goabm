@@ -22,7 +22,7 @@ type FLNMAgenter interface {
 }
 
 type FLNMAgent struct {
-	Seqnr int `json:"index"`
+	Seqnr AgentID `json:"index"`
 	X     int `json:"x"`
 	Y     int `json:"y"`
 	ls    *FixedLandscapeNoMovement
@@ -30,8 +30,8 @@ type FLNMAgent struct {
 }
 
 type Link struct {
-Source int `json:"source"`
-Target int `json:"target"`
+Source AgentID `json:"source"`
+Target AgentID `json:"target"`
 }
 
 type NetworkDump struct {
@@ -74,6 +74,15 @@ b, err := json.Marshal(NetworkDump{Nodes:nodes,Links:links})
 		fmt.Println("error:", err)
 	}
 return b
+}
+
+func (l *FixedLandscapeNoMovement) GetAgentById(id AgentID) Agenter {
+ 	for i,a := range l.Agents {
+ 	 if a.Seqnr == id {
+ 	 return l.UserAgents[i]
+ 	 }
+ 	}
+ 	return nil
 }
 
 func (l *FixedLandscapeNoMovement) GetAgents() []Agenter {
@@ -136,7 +145,7 @@ func (l *FixedLandscapeNoMovement) Init(model Modeler) {
 		//for i:=0;i<numAgents;i++ {
 		l.UserAgents[i] = model.CreateAgent(&l.Agents[i])
 
-		l.Agents[i].Seqnr = i
+		l.Agents[i].Seqnr = AgentID(i)
 
 		l.Agents[i].X = x
 		l.Agents[i].Y = y

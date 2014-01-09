@@ -24,10 +24,11 @@ type FixedLandscapeWithMovement struct {
 type FLWMAgenter interface {
 	GetRandomNeighbor() Agenter
 	MoveRandomly(float64)
+	Id() AgentID
 }
 
 type FLWMAgent struct {
-	seqnr int
+	seqnr AgentID   
 	x     float64
 	y     float64
 	ls    *FixedLandscapeWithMovement
@@ -35,6 +36,10 @@ type FLWMAgent struct {
 	//exe Agenter
 }
 
+func (a *FLWMAgent) Id() AgentID {
+return a.seqnr
+}
+        
 func (l *FixedLandscapeWithMovement) Dump() []byte {
 
 	return []byte("")
@@ -45,6 +50,14 @@ func (l *FixedLandscapeWithMovement) GetAgents() []Agenter {
 	return l.UserAgents
 }
 
+func (l *FixedLandscapeWithMovement) GetAgentById(id AgentID) Agenter {
+ 	for i,a := range l.Agents {
+ 	 if a.seqnr == id {
+ 	 return l.UserAgents[i]
+ 	 }
+ 	}
+ 	return nil
+}
 
 func (a *FLWMAgent) MoveRandomly(steplength float64) {
 	//random direction
@@ -57,12 +70,22 @@ func (a *FLWMAgent) MoveRandomly(steplength float64) {
 }
 
 func (a *FLWMAgent) GetRandomNeighbor() Agenter {
-	possibleNeighbors := a.ls.tree.FindNearObjects(qt.Twof{a.x, a.y},a.ls.Sight)
+	tmp := a.ls.tree.FindNearObjects(qt.Twof{a.x, a.y},a.ls.Sight)
+	var possibleNeighbors []qt.Object
+	for _, v := range tmp {
+	if v.(*FLWMAgent).seqnr != a.seqnr {
+	 possibleNeighbors = append(possibleNeighbors, v)
+	}
+	}
 	if len(possibleNeighbors) < 1 {
 	  return nil
 }
+
 	choice := rand.Int31n(int32(len(possibleNeighbors)))
 	i:= possibleNeighbors[choice].(*FLWMAgent).seqnr
+	if i == a.seqnr {
+	panic("same agent")
+	}
 	return a.ls.UserAgents[i]
 }
 
@@ -83,7 +106,7 @@ func (l *FixedLandscapeWithMovement) Init(model Modeler) {
 		//for i:=0;i<numAgents;i++ {
 		l.UserAgents[i] = model.CreateAgent(&l.Agents[i])
 
-		l.Agents[i].seqnr = i
+		l.Agents[i].seqnr = AgentID(i)
 		l.Agents[i].x = float64(x)
 		l.Agents[i].y = float64(y)
 

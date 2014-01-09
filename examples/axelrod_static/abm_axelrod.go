@@ -71,8 +71,8 @@ type Axelrod struct {
 	Features  int `goabm:"hide"`
 }
 
-func (a *Axelrod) Init(l goabm.Landscaper) {
-	a.Landscape = l
+func (a *Axelrod) Init(l interface{}) {
+	a.Landscape = l.(goabm.Landscaper)
 }
 
 func (a *Axelrod) CreateAgent(agenter interface{}) goabm.Agenter {
@@ -116,13 +116,12 @@ func main() {
 
 	var runs = flag.Int("runs", 200, "number of simulation runs")
 	flag.Parse()
-
+		fmt.Println("ABM simulation")
         // create your model which has to satisfy the Modeler interface
 	model := &Axelrod{Traits: *traits, Features: *features}
 	// create the simulation with a Landscape, your model and a logger
 	sim := &goabm.Simulation{Landscape: &goabm.FixedLandscapeNoMovement{Size: *size}, Model: model, Log: goabm.Logger{StdOut: true}}
 	sim.Init()
-		fmt.Println("ABM simulation")
 	for i := 0; i < *runs; i++ {
 		//fmt.Printf("Step #%d, Events:%d, Cultures:%d\n", i, sim.Stats.Events, model.Cultures)
 		if model.Cultures == 1 {
