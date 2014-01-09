@@ -90,8 +90,29 @@ func (a *FLWMAgent) MoveRandomly(steplength float64) {
 	y, _ := v.Get(1)
 	x = x + a.X
 	y = y + a.Y
-	a.ls.tree.Move(a, qt.Twof{x, y})
+	
+	// check bounds
+	if x < 0 {
+	 x = bsize + x // reenter world on the other side
+	}
+	if y < 0 {
+	 y = bsize + y // reenter world on the other side
+	}
+	if x > bsize {
+	x = x - bsize
+	}
+	if y > bsize {
+	y = y - bsize
+	}
+	if x >= float64(a.ls.Size) || x < 0 || y >= float64(a.ls.Size) || y < 0  {
+        // just try again
+        fmt.Printf("out of bounds %f/%f of %f\n",x,y, bsize)
+         a.MoveRandomly(steplength)
+         return
+	}
 	//fmt.Printf("move from %f/%f to %f/%f\n",a.X,a.Y,x,y)
+	a.ls.tree.Move(a, qt.Twof{x, y})
+
 	a.X = x
 	a.Y = y
 }

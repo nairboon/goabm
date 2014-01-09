@@ -102,9 +102,11 @@ rand.Seed(int64(time.Now().Nanosecond()))
 }
 
 func (a *Abst) Close() {
+if JournaledSimulation {
  err := a.ZipJournal.Close()
  if err != nil {
     		log.Fatal(err)
 	}
  a.Journal.Close()
+ }
 }
