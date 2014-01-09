@@ -76,10 +76,14 @@ func (l *FixedLandscapeWithMovement) GetAgentById(id AgentID) Agenter {
 	}
 	return nil
 }
+func random(min, max float64) float64 {
+  return rand.Float64() * (max - min) + min
+}
 
 func (a *FLWMAgent) MoveRandomly(steplength float64) {
 	//random direction
-	v := vector.NewFrom([]float64{rand.Float64()*float64(a.ls.Size), rand.Float64()*float64(a.ls.Size)})
+	bsize := float64(a.ls.Size)
+	v := vector.NewFrom([]float64{random(-bsize,bsize), random(-bsize,bsize)})
 	v.Normalize()
 	v.Scale(steplength)
 	x, _ := v.Get(0) 
