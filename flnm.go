@@ -41,7 +41,7 @@ Links []Link `json:"links"`
 func (l *FixedLandscapeNoMovement) Dump() []byte {
 // dump as a network
 nodes := l.UserAgents
-links := make([]Link,len(l.Agents)*4) // every node has 4 neighbors
+var links []Link  
 
 	for _,a := range l.Agents {
 	     for i:=0;i< 4; i++ {
@@ -63,6 +63,7 @@ var t FLNMAgent
 	//panic("self link")
 	        link := Link{Source: a.Seqnr, Target: t.Seqnr}
 		     links = append(links,link)
+
 	}
 		
 	     }   

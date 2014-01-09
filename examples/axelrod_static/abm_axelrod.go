@@ -112,7 +112,7 @@ func main() {
 
 	var traits = flag.Int("traits", 5, "number of cultural traits per feature")
 	var features = flag.Int("features", 5, "number of cultural features")
-	var size = flag.Int("size", 10, "size (width/height) of the landscape")
+	var size = flag.Int("size", 5, "size (width/height) of the landscape")
 
 	var runs = flag.Int("runs", 200, "number of simulation runs")
 	flag.Parse()
