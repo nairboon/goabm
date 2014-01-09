@@ -17,8 +17,6 @@ type FixedLandscapeWithMovement struct {
 	Size       int
 	Sight      float64
 	NAgents    int
-	width      int
-	height     int
 	tree       *qt.Quadtree
 }
 
@@ -29,16 +27,16 @@ type FLWMAgenter interface {
 }
 
 type FLWMAgent struct {
-	seqnr AgentID
-	x     float64
-	y     float64
+	Seqnr AgentID `json:"index"`
+	X     float64 `json:"x"`
+	Y     float64 `json:"y"`
 	ls    *FixedLandscapeWithMovement
 	qt.Handle
 	//exe Agenter
 }
 
 func (a *FLWMAgent) Id() AgentID {
-	return a.seqnr
+	return a.Seqnr
 }
 
 func (l *FixedLandscapeWithMovement) Dump() []byte {
@@ -48,12 +46,12 @@ func (l *FixedLandscapeWithMovement) Dump() []byte {
 
 	for _, a := range l.Agents {
 
-		tmp := a.ls.tree.FindNearObjects(qt.Twof{a.x, a.y}, a.ls.Sight)
+		tmp := a.ls.tree.FindNearObjects(qt.Twof{a.X, a.Y}, a.ls.Sight)
 
 		for _, v := range tmp {
-			if v.(*FLWMAgent).seqnr != a.seqnr {
+			if v.(*FLWMAgent).Seqnr != a.Seqnr {
 				//panic("self link")
-				link := Link{Source: a.seqnr, Target: v.(*FLWMAgent).seqnr}
+				link := Link{Source: a.Seqnr, Target: v.(*FLWMAgent).Seqnr}
 				links = append(links, link)
 
 			}
@@ -75,7 +73,7 @@ func (l *FixedLandscapeWithMovement) GetAgents() []Agenter {
 
 func (l *FixedLandscapeWithMovement) GetAgentById(id AgentID) Agenter {
 	for i, a := range l.Agents {
-		if a.seqnr == id {
+		if a.Seqnr == id {
 			return l.UserAgents[i]
 		}
 	}
@@ -84,19 +82,24 @@ func (l *FixedLandscapeWithMovement) GetAgentById(id AgentID) Agenter {
 
 func (a *FLWMAgent) MoveRandomly(steplength float64) {
 	//random direction
-	v := vector.NewFrom([]float64{rand.Float64(), rand.Float64()})
+	v := vector.NewFrom([]float64{rand.Float64()*float64(a.ls.Size), rand.Float64()*float64(a.ls.Size)})
 	v.Normalize()
 	v.Scale(steplength)
-	x, _ := v.Get(0)
+	x, _ := v.Get(0) 
 	y, _ := v.Get(1)
+	x = x + a.X
+	y = y + a.Y
 	a.ls.tree.Move(a, qt.Twof{x, y})
+	fmt.Printf("move from %f/%f to %f/%f\n",a.X,a.Y,x,y)
+	a.X = x
+	a.Y = y
 }
 
 func (a *FLWMAgent) GetRandomNeighbor() Agenter {
-	tmp := a.ls.tree.FindNearObjects(qt.Twof{a.x, a.y}, a.ls.Sight)
+	tmp := a.ls.tree.FindNearObjects(qt.Twof{a.X, a.Y}, a.ls.Sight)
 	var possibleNeighbors []qt.Object
 	for _, v := range tmp {
-		if v.(*FLWMAgent).seqnr != a.seqnr {
+		if v.(*FLWMAgent).Seqnr != a.Seqnr {
 			possibleNeighbors = append(possibleNeighbors, v)
 		}
 	}
@@ -105,19 +108,18 @@ func (a *FLWMAgent) GetRandomNeighbor() Agenter {
 	}
 
 	choice := rand.Int31n(int32(len(possibleNeighbors)))
-	i := possibleNeighbors[choice].(*FLWMAgent).seqnr
-	if i == a.seqnr {
+	i := possibleNeighbors[choice].(*FLWMAgent).Seqnr
+	if i == a.Seqnr {
 		panic("same agent")
 	}
 	return a.ls.UserAgents[i]
 }
 
 func (l *FixedLandscapeWithMovement) Init(model Modeler) {
-	numAgents := l.Size * l.Size
+	numAgents := l.NAgents
 	fmt.Printf("Init landscape with %d agents\n", numAgents)
 
-	l.width = l.Size
-	l.height = l.Size
+
 
 	l.tree = qt.MakeQuadtree(qt.Twof{0, 0}, qt.Twof{float64(l.Size), float64(l.Size)})
 
@@ -129,14 +131,14 @@ func (l *FixedLandscapeWithMovement) Init(model Modeler) {
 		//for i:=0;i<numAgents;i++ {
 		l.UserAgents[i] = model.CreateAgent(&l.Agents[i])
 
-		l.Agents[i].seqnr = AgentID(i)
-		l.Agents[i].x = float64(x)
-		l.Agents[i].y = float64(y)
+		l.Agents[i].Seqnr = AgentID(i)
+		l.Agents[i].X = float64(x)
+		l.Agents[i].Y = float64(y)
 
 		l.tree.Add(&l.Agents[i], qt.Twof{float64(x), float64(y)})
 
 		x += 1
-		if x >= l.width {
+		if x >= l.Size {
 			// new row
 			x = 0
 			y += 1

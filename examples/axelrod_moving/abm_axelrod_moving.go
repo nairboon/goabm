@@ -16,22 +16,22 @@ import "math/rand"
 import "goabm"
 import "flag"
 
-// Implementation of the Agent, cultural Traits are stored in features
+// Implementation of the Agent, cultural Traits are stored in Features
 type AxelrodAgent struct {
-	features Feature
+	Features Feature
 	Agent    goabm.FLWMAgenter
-	Steplength float64
-	ProbVeloc float64
+	Steplength float64  `goabm:"hide"`
+	ProbVeloc float64  `goabm:"hide"`
 }
 
 // returns the culture as a string
 func (a *AxelrodAgent) Culture() string {
-	return fmt.Sprintf("%v", a.features)
+	return fmt.Sprintf("%v", a.Features)
 }
 
 // required for the simulation interface, called everytime when the agent is activated
 func (a *AxelrodAgent) Act() {
-	//fmt.Printf("Agent culture: %v\n",a.features)
+	//fmt.Printf("Agent culture: %v\n",a.Features)
 
 
 	dice := rand.Float64()
@@ -57,10 +57,10 @@ func (a *AxelrodAgent) Act() {
 	//interact with sim% chance
 	if dice2 <= sim {
 
-		for i := range a.features {
-			if a.features[i] != other.features[i] {
+		for i := range a.Features {
+			if a.Features[i] != other.Features[i] {
 				//fmt.Printf("%d influenced %d\n", other.seqnr, a.seqnr)
-				a.features[i] = other.features[i]
+				a.Features[i] = other.Features[i]
 				return
 			}
 
@@ -73,13 +73,13 @@ func (a *AxelrodAgent) Act() {
 func (a *AxelrodAgent) Similarity(other *AxelrodAgent) float32 {
 	c := float32(0.0)
 	// count equal traits, final score = shared traits/total traits
-	for i := range a.features {
-		if a.features[i] == other.features[i] {
+	for i := range a.Features {
+		if a.Features[i] == other.Features[i] {
 			c = c + 1
 		}
 	}
-	//fmt.Printf("sim: %f/%d\n",c,len(a.features))
-	return c / float32(len(a.features))
+	//fmt.Printf("sim: %f/%d\n",c,len(a.Features))
+	return c / float32(len(a.Features))
 }
 
 type Feature []int
@@ -87,10 +87,10 @@ type Feature []int
 type Axelrod struct {
 	Cultures  int
 	Landscape goabm.Landscaper
-	Traits    int
-	Features  int
-	Steplength float64
-	ProbVeloc float64
+	Traits    int  `goabm:"hide"`
+	Features  int  `goabm:"hide"`
+	Steplength float64  `goabm:"hide"`
+	ProbVeloc float64  `goabm:"hide"`
 }
 
 func (a *Axelrod) Init(l interface{}) {
@@ -105,7 +105,7 @@ func (a *Axelrod) CreateAgent(agenter interface{}) goabm.Agenter {
 	for i := range f {
 		f[i] = rand.Intn(a.Traits)
 	}
-	agent.features = f
+	agent.Features = f
 	agent.ProbVeloc = a.ProbVeloc
 	agent.Steplength = a.Steplength
 	return agent
@@ -137,7 +137,7 @@ func main() {
 	fmt.Println("ABM simulation")
 	// general model parameters
 	var traits = flag.Int("traits", 5, "number of cultural traits per feature")
-	var features = flag.Int("features", 5, "number of cultural features")
+	var Features = flag.Int("Features", 5, "number of cultural Features")
 	var size = flag.Int("size", 10, "size (width/height) of the landscape")
 
 	// parameters for the moving model
@@ -149,11 +149,12 @@ func main() {
 	var runs = flag.Int("runs", 200, "number of simulation runs")
 	flag.Parse()
 
-	model := &Axelrod{Traits: *traits, Features: *features, ProbVeloc: *probveloc, Steplength: *steplength}
-	sim := &goabm.Simulation{Landscape: &goabm.FixedLandscapeWithMovement{Size: *size, NAgents: *numAgents,Sight:*sight}, Model: model}
+	model := &Axelrod{Traits: *traits, Features: *Features, ProbVeloc: *probveloc, Steplength: *steplength}
+sim := &goabm.Simulation{Landscape: &goabm.FixedLandscapeWithMovement{Size: *size, NAgents: *numAgents,Sight:*sight},
+ Model: model , Log: goabm.Logger{StdOut: true}}
 	sim.Init()
 	for i := 0; i < *runs; i++ {
-		fmt.Printf("Step #%d, Events:%d, Cultures:%d\n", i, sim.Stats.Events, model.Cultures)
+		//fmt.Printf("Step #%d, Events:%d, Cultures:%d\n", i, sim.Stats.Events, model.Cultures)
 		if model.Cultures == 1 {
 			return
 		}
