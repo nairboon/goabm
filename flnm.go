@@ -5,7 +5,7 @@ Copyright 2013 by Remo Hertig <remo.hertig@bluewin.ch>
 package goabm
 
 import ("fmt"
- "math/rand"
+ //"math/rand"
 )
 
 // 2d landscape with no movement
@@ -18,11 +18,11 @@ type FixedLandscapeNoMovement struct {
 }
 
 type FLNMAgenter interface {
-	GetRandomNeighbor() Agenter
+	GetRandomNeighbor() AgentID
 }
 
 type FLNMAgent struct {
-	Seqnr AgentID `json:"index"`
+        *GenericAgent
 	X     int `json:"x"`
 	Y     int `json:"y"`
 	ls    *FixedLandscapeNoMovement
@@ -51,9 +51,9 @@ var t FLNMAgent
 	default:
 		panic(">3")
 	}
-	if a.Seqnr != t.Seqnr {
+	if a.ID() != t.ID() {
 	//panic("self link")
-	        link := Link{Source: a.Seqnr, Target: t.Seqnr}
+	        link := Link{Source: a.ID(), Target: t.ID()}
 		     links = append(links,link)
 
 	}
@@ -67,8 +67,9 @@ return NetworkDump{Nodes:nodes,Links:links}
 }
 
 func (l *FixedLandscapeNoMovement) GetAgentById(id AgentID) Agenter {
+        //fmt.Printf("ga: %v",id)
  	for i,a := range l.Agents {
- 	 if a.Seqnr == id {
+ 	 if a.ID() == id {
  	 return l.UserAgents[i]
  	 }
  	}
@@ -104,7 +105,9 @@ func (l *FixedLandscapeNoMovement) _GetAgent(x, y int) FLNMAgent {
 	return l.Agents[l.width*x+y]
 }
 
-func (a *FLNMAgent) GetRandomNeighbor() Agenter {
+func (a *FLNMAgent) GetRandomNeighbor() (AgentID,error) {
+        return a.GetRandomLink()
+/*
 	switch choice := rand.Int31n(3); choice {
 	case 0: // top
 		return a.ls.GetAgent(a.X, a.Y+1)
@@ -117,7 +120,7 @@ func (a *FLNMAgent) GetRandomNeighbor() Agenter {
 	default:
 		panic(">3")
 
-	}
+	}*/
 }
 
 func (l *FixedLandscapeNoMovement) Init(model Modeler) {
@@ -135,10 +138,13 @@ func (l *FixedLandscapeNoMovement) Init(model Modeler) {
 		//for i:=0;i<numAgents;i++ {
 		l.UserAgents[i] = model.CreateAgent(&l.Agents[i])
 
-		l.Agents[i].Seqnr = AgentID(i)
+                l.Agents[i].GenericAgent = &GenericAgent{}
 
 		l.Agents[i].X = x
 		l.Agents[i].Y = y
+
+		l.Agents[i].GenericAgent.SetID(AgentID(i))
+				
 		x += 1
 		if x >= l.width {
 			// new row
@@ -148,5 +154,11 @@ func (l *FixedLandscapeNoMovement) Init(model Modeler) {
 		}
 		l.Agents[i].ls = l
 
+	}
+	
+	// connect network
+	for _,a := range l.Agents {
+	 n:= l._GetAgent(a.X,a.Y+1).GenericAgent
+	 a.ConnectTo( n)
 	}
 }

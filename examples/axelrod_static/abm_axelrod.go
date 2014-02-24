@@ -15,19 +15,23 @@ import "flag"
 // Implementation of the Agent, cultural Traits are stored in features
 type AxelrodAgent struct {
 	Features Feature
-	Agent    goabm.FLNMAgenter
+	*goabm.FLNMAgent
+	Model *Axelrod
 }
 
 // returns the culture as a string
 func (a *AxelrodAgent) Culture() string {
 	return fmt.Sprintf("%v", a.Features)
 }
+/*
+func (a *AxelrodAgent) ID() string {
+}*/
 
 // required for the simulation interface, called everytime when the agent is activated
 func (a *AxelrodAgent) Act() {
 
 	// (ii) (a) selects a neighbor for cultural interaction
-	other := a.Agent.GetRandomNeighbor().(*AxelrodAgent)
+	other := a.Model.GetRandomNeighbor(a)
 	sim := a.Similarity(other)
 	if sim >= 0.99 {
 		// agents are already equal
@@ -71,19 +75,28 @@ type Axelrod struct {
 	Features  int `goabm:"hide"`
 }
 
+func (a *Axelrod) GetRandomNeighbor(origin *AxelrodAgent) *AxelrodAgent{
+       id, err := origin.GetRandomLink()
+       if(err != nil) {
+       panic(err)
+       }
+       return a.Landscape.GetAgentById(id).(*AxelrodAgent)
+}
+
 func (a *Axelrod) Init(l interface{}) {
 	a.Landscape = l.(goabm.Landscaper)
 }
 
 func (a *Axelrod) CreateAgent(agenter interface{}) goabm.Agenter {
 
-	agent := &AxelrodAgent{Agent: agenter.(goabm.FLNMAgenter)}
+	agent := &AxelrodAgent{FLNMAgent: agenter.(*goabm.FLNMAgent)}
 
 	f := make(Feature, a.Features)
 	for i := range f {
 		f[i] = rand.Intn(a.Traits)
 	}
 	agent.Features = f
+	agent.Model = a
 	return agent
 }
 
@@ -110,9 +123,9 @@ func main() {
         //initialize the goabm library (logs & flags)
 	goabm.Init()
 
-	var traits = flag.Int("traits", 5, "number of cultural traits per feature")
-	var features = flag.Int("features", 5, "number of cultural features")
-	var size = flag.Int("size", 5, "size (width/height) of the landscape")
+	var traits = flag.Int("traits", 15, "number of cultural traits per feature")
+	var features = flag.Int("features", 15, "number of cultural features")
+	var size = flag.Int("size", 10, "size (width/height) of the landscape")
 
 	var runs = flag.Int("runs", 200, "number of simulation runs")
 	flag.Parse()

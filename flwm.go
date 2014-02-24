@@ -139,7 +139,7 @@ func (a *FLWMAgent) GetRandomNeighbor() Agenter {
 
 func (l *FixedLandscapeWithMovement) Init(model Modeler) {
 	numAgents := l.NAgents
-	fmt.Printf("Init landscape with %d agents\n", numAgents)
+	//fmt.Printf("Init landscape with %d agents\n", numAgents)
 
 
 

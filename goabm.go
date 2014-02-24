@@ -33,6 +33,7 @@ type AgentID int
 
 type Agenter interface {
 	Act()
+	ID() AgentID
 }
 
 type Modeler interface {

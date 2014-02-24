@@ -66,10 +66,10 @@ rand.Seed(int64(time.Now().Nanosecond()))
 			panic(err)
 		}
 	}
-	if RunID == "" {
+	//if RunID == "" {
 		RunID = fmt.Sprintf("%d", rand.Int())
 		
-	}
+	//}
 	runDir := OutputDir + "/goabm." + RunID
 	err = os.Mkdir(runDir, 0700)
 		if err != nil {
