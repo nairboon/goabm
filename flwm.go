@@ -27,6 +27,7 @@ type FLWMAgenter interface {
 }
 
 type FLWMAgent struct {
+        *GenericAgent
 	Seqnr AgentID `json:"index"`
 	X     float64 `json:"x"`
 	Y     float64 `json:"y"`
@@ -153,6 +154,7 @@ func (l *FixedLandscapeWithMovement) Init(model Modeler) {
 		//for i:=0;i<numAgents;i++ {
 		l.UserAgents[i] = model.CreateAgent(&l.Agents[i])
 
+                l.Agents[i].GenericAgent = &GenericAgent{}
 		l.Agents[i].Seqnr = AgentID(i)
 		l.Agents[i].X = float64(x)
 		l.Agents[i].Y = float64(y)

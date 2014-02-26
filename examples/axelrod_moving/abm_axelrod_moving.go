@@ -19,7 +19,8 @@ import "flag"
 // Implementation of the Agent, cultural Traits are stored in Features
 type AxelrodAgent struct {
 	Features Feature
-	Agent    goabm.FLWMAgenter
+	*goabm.FLWMAgent
+	Model *Axelrod
 	Steplength float64  `goabm:"hide"`
 	ProbVeloc float64  `goabm:"hide"`
 }
@@ -37,16 +38,16 @@ func (a *AxelrodAgent) Act() {
 	dice := rand.Float64()
 	// (i) agent decides to move according to the probability veloc
 	if dice <= a.ProbVeloc {
-		a.Agent.MoveRandomly(a.Steplength)
+		a.MoveRandomly(a.Steplength)
 	}
 
 	// (ii) (a) selects a neighbor for cultural interaction
-	res := a.Agent.GetRandomNeighbor()
+	res :=  a.Model.GetRandomNeighbor(a)
 	// there is no agent in sight
 	if res == nil {
 	return
 	}
-	other :=res.(*AxelrodAgent)
+	other :=res
 	sim := a.Similarity(other)
 	if sim >= 0.99 {
 		// agents are already equal
@@ -97,9 +98,23 @@ func (a *Axelrod) Init(l interface{}) {
 	a.Landscape = l.(goabm.Landscaper)
 }
 
+func (a *Axelrod) GetRandomNeighbor(origin *AxelrodAgent) *AxelrodAgent{
+        n := origin.GetRandomNeighbor()
+        if(n!= nil){
+        return n.(*AxelrodAgent)
+        } else {
+        return nil
+        }
+       id, err := origin.GetRandomLink()
+       if(err != nil) {
+       panic(err)
+       }
+       return a.Landscape.GetAgentById(id).(*AxelrodAgent)
+}
+
 func (a *Axelrod) CreateAgent(agenter interface{}) goabm.Agenter {
 
-	agent := &AxelrodAgent{Agent: agenter.(goabm.FLWMAgenter)}
+	agent := &AxelrodAgent{FLWMAgent: agenter.(*goabm.FLWMAgent)}
 
 	f := make(Feature, a.Features)
 	for i := range f {
@@ -108,6 +123,7 @@ func (a *Axelrod) CreateAgent(agenter interface{}) goabm.Agenter {
 	agent.Features = f
 	agent.ProbVeloc = a.ProbVeloc
 	agent.Steplength = a.Steplength
+	agent.Model = a
 	return agent
 }
 
