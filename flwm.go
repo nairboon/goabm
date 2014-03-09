@@ -156,6 +156,9 @@ func (l *FixedLandscapeWithMovement) Init(model Modeler) {
 
                 l.Agents[i].GenericAgent = &GenericAgent{}
 		l.Agents[i].Seqnr = AgentID(i)
+		l.Agents[i].SetID( AgentID(i) )
+		x = rand.Intn(l.Size)
+		y = rand.Intn(l.Size)
 		l.Agents[i].X = float64(x)
 		l.Agents[i].Y = float64(y)
 

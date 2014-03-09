@@ -50,6 +50,32 @@ type Landscaper interface {
 	GetAgentById(AgentID) Agenter
 }
 
+type Model struct {
+        Ruleset
+}
+
+type Ruleset struct {
+        Rules map[string]bool
+}
+
+func (r *Ruleset) Init(){
+        r.Rules = make(map[string]bool)
+}
+
+func (r *Ruleset) SetRule(rule string, val bool){
+ r.Rules[rule] = val
+}
+
+func (r *Ruleset) IsRuleActive(rule string) bool{
+
+        v, ok := r.Rules[rule]
+        //fmt.Printf("v:%v o:%v %v",v, ok, r.Rules)
+        if !ok {
+        panic("rule does not exist")
+        }
+        
+        return v
+}
 
 
 type Statistics struct {
@@ -70,6 +96,7 @@ type Simulation struct {
 func (s *Simulation) Init() {
 	s.Model.Init(s.Landscape)
 	s.Landscape.Init(s.Model)
+
 
 	s.Log.Model = s.Model
 
@@ -101,7 +128,7 @@ func (s *Simulation) Step() {
 	
 	if(JournaledSimulation) { // dump landscape
 	
-	//fmt.Println(s.Landscape.Dump())
+	fmt.Println(s.Landscape.Dump())
 
         dump := s.Landscape.Dump()
         //marshal
@@ -164,4 +191,16 @@ func (l *Logger) Step(stats Statistics) {
 
 }
 
+func Random(min, max float64) float64 {
+  return rand.Float64() * (max - min) + min
+}
+
+func RollDice(probability float64) bool{
+dice := rand.Float64()
+if dice <= probability {
+return true
+} else {
+return false
+}
+}
 
