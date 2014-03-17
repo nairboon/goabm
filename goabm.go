@@ -27,6 +27,8 @@ import ("math/rand"
 "os"
 "runtime"
  "encoding/json"
+ "time"
+
 )
 
 type AgentID int
@@ -40,6 +42,7 @@ type Modeler interface {
 	LandscapeAction()
 	Init(interface{})//Landscaper)
 	CreateAgent(interface{}) Agenter
+	InitRand()
 }
 
 type Landscaper interface {
@@ -48,11 +51,35 @@ type Landscaper interface {
 	GetAgents() *[]Agenter
 	Dump() NetworkDump //TODO: cleanup dump and use streams
 	GetAgentById(AgentID) Agenter
+	RandomAgent() Agenter
 }
 
 type Model struct {
         Ruleset
+        _rand *rand.Rand
 }
+
+func (m *Model) InitRand() {
+	m._rand = rand.New(rand.NewSource(time.Now().UnixNano()))
+}
+
+func (m *Model) Random(min, max float64) float64 {
+  return m._rand.Float64() * (max - min) + min
+}
+
+func  Random(min, max float64) float64 {
+  return rand.Float64() * (max - min) + min
+}
+
+func (m* Model) RollDice(probability float64) bool{
+dice := m._rand.Float64()
+if dice <= probability {
+return true
+} else {
+return false
+}
+}
+
 
 type Ruleset struct {
         Rules map[string]bool
@@ -94,6 +121,7 @@ type Simulation struct {
 }
 
 func (s *Simulation) Init() {
+        s.Model.InitRand() // rand
 	s.Model.Init(s.Landscape)
 	s.Landscape.Init(s.Model)
 
@@ -191,16 +219,4 @@ func (l *Logger) Step(stats Statistics) {
 
 }
 
-func Random(min, max float64) float64 {
-  return rand.Float64() * (max - min) + min
-}
-
-func RollDice(probability float64) bool{
-dice := rand.Float64()
-if dice <= probability {
-return true
-} else {
-return false
-}
-}
 

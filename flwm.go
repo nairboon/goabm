@@ -6,6 +6,7 @@ package goabm
 
 import "fmt"
 import "math/rand"
+import "time"
 
 import qt "github.com/larspensjo/quadtree"
 import vector "github.com/proxypoke/vector"
@@ -18,6 +19,7 @@ type FixedLandscapeWithMovement struct {
 	Sight      float64
 	NAgents    int
 	tree       *qt.Quadtree
+	rand *rand.Rand
 }
 
 type FLWMAgenter interface {
@@ -77,14 +79,15 @@ func (l *FixedLandscapeWithMovement) GetAgentById(id AgentID) Agenter {
 	}
 	return nil
 }
-func random(min, max float64) float64 {
-  return rand.Float64() * (max - min) + min
+
+func (l *FixedLandscapeWithMovement) random(min, max float64) float64 {
+  return l.rand.Float64() * (max - min) + min
 }
 
 func (a *FLWMAgent) MoveRandomly(steplength float64) {
 	//random direction
 	bsize := float64(a.ls.Size)
-	v := vector.NewFrom([]float64{random(-bsize,bsize), random(-bsize,bsize)})
+	v := vector.NewFrom([]float64{a.ls.random(-bsize,bsize), a.ls.random(-bsize,bsize)})
 	v.Normalize()
 	v.Scale(steplength)
 	x, _ := v.Get(0) 
@@ -139,6 +142,7 @@ func (a *FLWMAgent) GetRandomNeighbor() Agenter {
 }
 
 func (l *FixedLandscapeWithMovement) Init(model Modeler) {
+	l.rand = rand.New(rand.NewSource(time.Now().UnixNano()))
 	numAgents := l.NAgents
 	//fmt.Printf("Init landscape with %d agents\n", numAgents)
 
